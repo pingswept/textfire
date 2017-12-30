@@ -1,8 +1,7 @@
 from __future__ import print_function
 from flask import Flask, render_template, request
-#from xkcd_colors import xkcd_names_to_hex
-import webcolors
 import time
+import parsley
 from random import randint
 
 import socket
@@ -10,6 +9,26 @@ import array
 import sys
 from math import sin
 import itertools
+
+import webcolors
+from xkcd_colors import xkcd_names_to_hex
+
+def look_up_color(name):
+    try:
+        color = webcolors.hex_to_rgb(xkcd_names_to_hex[name])
+    except: # if we can't find a color, make up a random one
+        color = [randint(0, 255), randint(0, 255), randint(0, 255)]
+    return color
+
+p = parsley.makeGrammar("""
+# [color][style][action][color][style][repeat:n][speed:n][duration:n]
+#sequence = command+
+#command = look ws+ action+ ws+ look+ repeat* speed* duration*
+look = color:c (ws style:s -> 'COLOR' + ' ' + 'STYLE'
+               | -> 'COLOR')
+color = ('blue'|'red'):c -> look_up_color(c)
+style = ('fire'|'ice'):s -> 'STYLE'
+""", {'look_up_color': look_up_color})
 
 wrapper = None
 
@@ -36,7 +55,7 @@ def complement(color): # pass color as (r, g, b) tuple
 def look_up_color(name):
     try:
         color = webcolors.hex_to_rgb(xkcd_names_to_hex[name])
-    except: # if we can't find a color, make up a random one
+B    except: # if we can't find a color, make up a random one
         color = [randint(0, 255), randint(0, 255), randint(0, 255)]
     return color
 
